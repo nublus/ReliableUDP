@@ -11,7 +11,7 @@ class Package:
         self.seq = seq  # 序号
         self.data = data  # 数据
 
-server_name = '8.137.79.215'
+server_name = 'localhost'
 server_port = 12000
 client_socket = socket(AF_INET, SOCK_DGRAM)
 
