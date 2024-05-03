@@ -2,7 +2,10 @@ from socket import *
 import pickle
 import os
 import random
+import logging
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='rcv.log', level=logging.DEBUG, filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
 class Package:
     def __init__(self, seq, data):
         self.seq = seq  # 序号
@@ -27,27 +30,27 @@ with open('lex.yy.c', 'wb') as f:
         
         if received_package.seq == -1:
             # 接收到结束通知，退出循环
-            print("File transfer completed.")
+            logger.debug("File transfer completed.")
             # 结束发送-1
             client_socket.sendto(str(-1).encode(), server_address)
             break
 
         elif ack == expected:
-            print(f'rev expected seq {ack}')
+            logger.debug(f'rev expected seq {ack}')
             f.write(received_package.data)
+            expected += 1
             # 模拟丢包
             if random.random() >= loss_rate:
                 client_socket.sendto(str(ack).encode(), server_address)
-                expected = expected + 1
-                print(f'sending success: {ack}')
+                logger.debug(f'sending ack success: {ack}')
+            else:
+                logger.error(f"Fail to sending ack: {ack}")
         
         else:
             # 不符合预期，发送最大接受包
-            if random.random() >= loss_rate:
-                client_socket.sendto(str(expected).encode(), server_address)
-                print(f'sending success:   {expected}')
+            # if random.random() >= loss_rate:
+            client_socket.sendto(str(expected -1).encode(), server_address)
+            logger.warning(f'Expected seq: {expected}, but receive: {ack}')
 
 
 client_socket.close()
-
-
