@@ -117,9 +117,10 @@ def send_packets(server_socket, client_address, packages):
             if next_seqnum != base: # 如果超时重传未能将窗口处理好，则重新发送base-nextseq
                 next_seqnum = base # 避免一但产生丢包，就只能靠超时重传
                 logger.warning('Reset Window')
-            
-            
-    for i in range(lenth-4, lenth):
+                
+    # 如果窗口未满则取包大小     
+    resend_size :int = lenth if window_size>lenth else window_size
+    for i in range(lenth-resend_size, lenth):
         serialized_package = pickle.dumps(packages[i])
         server_socket.sendto(serialized_package, client_address)
         logger.debug(f"Sent packet i{i}, Base:{base}, nextseq: {next_seqnum}")
