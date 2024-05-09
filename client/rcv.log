@@ -1,0 +1,10 @@
+2024-05-09 16:45:48,834 - DEBUG - rev expected seq 0
+2024-05-09 16:45:48,834 - ERROR - Fail to sending ack: 0
+2024-05-09 16:45:49,836 - DEBUG - rev expected seq 1
+2024-05-09 16:45:49,836 - DEBUG - sending ack success: 1
+2024-05-09 16:45:50,836 - DEBUG - rev expected seq 2
+2024-05-09 16:45:50,837 - DEBUG - sending ack success: 2
+2024-05-09 16:45:51,856 - DEBUG - rev expected seq 3
+2024-05-09 16:45:51,856 - DEBUG - sending ack success: 3
+2024-05-09 16:45:52,837 - WARNING - Expected seq: 4, but receive: 0
+2024-05-09 16:45:52,844 - WARNING - Expected seq: 4, but receive: 1
