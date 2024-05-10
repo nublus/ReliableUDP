@@ -61,6 +61,7 @@ def sr_rec(n, s, fname):
 
     loss_rate = 0.1
     expected = 0
+    file_size = 0
     with open('../testcase/'+fname, 'wb') as f:
         sr_pack: SR_pack= SR_pack()
         while True:
@@ -80,6 +81,7 @@ def sr_rec(n, s, fname):
                 logger.debug(f'rev expected seq {ack}')
                 f.write(received_package.data)
                 expected += 1
+                file_size = file_size+len(received_package.data)
 
                 '''
                     关键逻辑:
@@ -89,6 +91,7 @@ def sr_rec(n, s, fname):
                 '''
                 while(sr_pack.size()!=0 and sr_pack.peek().seq==expected):
                     f.write(sr_pack.peek().data)
+                    file_size = file_size+len(sr_pack.peek().data)
                     ack += 1
                     expected += 1
                     sr_pack.pop()
@@ -114,3 +117,4 @@ def sr_rec(n, s, fname):
 
 
     client_socket.close()
+    return file_size

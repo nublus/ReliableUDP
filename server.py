@@ -6,9 +6,11 @@ import threading
 import logging
 
 SERVERPORT = 12000
-TIMEOUT = 3
+# TIMEOUT的单位时ms
+TIMEOUT = 3000
 packet_size = 1024
-window_size = 4
+# 这里根据需要调整窗口大小
+window_size = 200
 next_seqnum = -1
 base = -1
 loss_rate = 0.2
@@ -30,7 +32,7 @@ def startTimer():
         stopTimer()
     timer_running = True
     global timer
-    timer = threading.Timer(TIMEOUT, handleTimeout)
+    timer = threading.Timer(TIMEOUT/1000, handleTimeout)
     timer.start()
     # logger.info('Timer started')
     return timer
@@ -61,7 +63,6 @@ def handleTimeout():
                 logger.warning(f"Retransmitted packet {packages[i].seq}")
             else:
                 logger.error(f"Loss Retransmitted packet {packages[i].seq}")
-            time.sleep(0.3)
 
 
 def initWindow(size):
@@ -88,6 +89,7 @@ def send_packets(server_socket, client_address, packages):
     global next_seqnum, base, window_size
     lenth = len(packages)
     print(f'package lenth: {lenth}')
+    firstFlag=True
     #  for i in range(len(packages)):
     while True:
         # 发送窗口未满
@@ -97,13 +99,12 @@ def send_packets(server_socket, client_address, packages):
             serialized_package = pickle.dumps(packages[next_seqnum])
 
             # 模拟数据包丢失
-            if random.random() >= loss_rate:
+            if random.random() >= loss_rate or firstFlag:
                 server_socket.sendto(serialized_package, client_address)
                 logger.debug(f"Sent packet {packages[next_seqnum].seq}, Base:{base}, nextseq: {next_seqnum}")
             else:
                 logger.error(f"Loss packet {packages[next_seqnum].seq}, Base:{base}, nextseq: {next_seqnum}")
             
-            time.sleep(1)  # 模拟发送数据包的延迟
             if base == next_seqnum:
                 # 开始计时，timeout时间内如果没有收到客户端ack，触发timeout，重新发送base - (nextseq - 1)
                 startTimer()
@@ -111,13 +112,13 @@ def send_packets(server_socket, client_address, packages):
             next_seqnum += 1
 
         else:
-            print("sending window full, try again 4s later")
+            print("sending window full, try again")
             logger.warning(f"sending window full, base: {base}, nextseq: {next_seqnum}")
-            time.sleep(4)
+            # time.sleep(4)
             if next_seqnum != base: # 如果超时重传未能将窗口处理好，则重新发送base-nextseq
                 next_seqnum = base # 避免一但产生丢包，就只能靠超时重传
                 logger.warning('Reset Window')
-                
+        firstFlag=False        
     # 如果窗口未满则取包大小     
     resend_size :int = lenth if window_size>lenth else window_size
     for i in range(lenth-resend_size, lenth):
