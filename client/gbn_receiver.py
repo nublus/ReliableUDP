@@ -15,10 +15,11 @@ def gbn_rec(n, s, fname):
     logger = logging.getLogger(__name__)
     logging.basicConfig(filename='rcv.log', level=logging.DEBUG, filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
     
-    server_name = '8.137.79.215'
+    server_name = 'localhost'
     server_port = 12000
     client_socket = socket(AF_INET, SOCK_DGRAM)
     window_size = n
+    file_size = 0
 
 
     server_address = (server_name, 12000)  # 替换为实际的服务器 IP 地址和端口号
@@ -44,6 +45,7 @@ def gbn_rec(n, s, fname):
             elif ack == expected:
                 logger.debug(f'rev expected seq {ack}')
                 f.write(received_package.data)
+                file_size = file_size+len(received_package.data)
                 expected += 1
                 
                 # 模拟丢包
@@ -60,3 +62,4 @@ def gbn_rec(n, s, fname):
                 logger.warning(f'Expected seq: {expected}, but receive: {ack}')
 
     client_socket.close()
+    return file_size
