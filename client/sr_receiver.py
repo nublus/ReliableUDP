@@ -12,7 +12,10 @@ class Package:
         self.seq = seq  # 序号
         self.data = data  # 数据
     # 提供一个堆排序时的比较方法
-    def __lt__(self, other:Package):
+    def __lt__(self, other):
+        if not isinstance(other, Package):
+            # 不是Package实例，返回NotImplemented
+            return NotImplemented
         return self.seq < other.seq
     # 定义打印规则
     def __repr__(self):
@@ -23,6 +26,14 @@ class SR_pack:
     def __init__(self):
         self.heap:heapq=[]
     def push(self, item):
+        if not isinstance(item, Package):
+            # 不是Package实例，返回NotImplemented
+            print("not package")
+            return
+        # 检查是否已存在相同序号的数据，如果已存在则不进行插入
+        for existing_item in self.heap:
+            if existing_item.seq == item.seq:
+                return
         heapq.heappush(self.heap, item)
 
     def pop(self):
@@ -39,7 +50,7 @@ def sr_rec(n, s, fname):
     logger = logging.getLogger(__name__)
     logging.basicConfig(filename='rcv.log', level=logging.DEBUG, filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
 
-    server_name = '8.137.79.215'
+    server_name = 'localhost'
     server_port = 12000
     client_socket = socket(AF_INET, SOCK_DGRAM)
     window_size = n
@@ -55,6 +66,7 @@ def sr_rec(n, s, fname):
         while True:
             data, server_address = client_socket.recvfrom(2048)
             received_package: Package = pickle.loads(data)
+            print(received_package.seq)
             ack = received_package.seq
             
             if received_package.seq == -1:
